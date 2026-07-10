@@ -268,10 +268,18 @@ nav.bottom{
     </div>
 
     <div class="card">
-      <p class="section-label">SMT divergence present?</p>
-      <div class="toggle-row" id="smtRow">
-        <div class="toggle-btn yes" data-val="yes">SMT</div>
-        <div class="toggle-btn no on" data-val="no">NO SMT</div>
+      <p class="section-label">SMT for bias?</p>
+      <div class="toggle-row" id="smtBiasRow">
+        <div class="toggle-btn yes" data-val="yes">YES</div>
+        <div class="toggle-btn no on" data-val="no">NO</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">SMT for entry?</p>
+      <div class="toggle-row" id="smtEntryRow">
+        <div class="toggle-btn yes" data-val="yes">YES</div>
+        <div class="toggle-btn no on" data-val="no">NO</div>
       </div>
     </div>
 
@@ -415,8 +423,10 @@ nav.bottom{
       <div class="filter-pill" data-filter="reversal">Reversal</div>
       <div class="filter-pill" data-filter="win">Win</div>
       <div class="filter-pill" data-filter="loss">Loss</div>
-      <div class="filter-pill" data-filter="smt">SMT</div>
-      <div class="filter-pill" data-filter="nosmt">No SMT</div>
+      <div class="filter-pill" data-filter="smtbias">SMT Bias</div>
+      <div class="filter-pill" data-filter="nosmtbias">No SMT Bias</div>
+      <div class="filter-pill" data-filter="smtentry">SMT Entry</div>
+      <div class="filter-pill" data-filter="nosmtentry">No SMT Entry</div>
     </div>
     <div id="tradesList"></div>
   </section>
@@ -430,8 +440,13 @@ nav.bottom{
     </div>
 
     <div class="card">
-      <p class="section-label">SMT impact — trailing R</p>
-      <div class="scoreboard" id="smtBoard" style="grid-template-columns:1fr 1fr;"></div>
+      <p class="section-label">SMT bias impact — trailing R</p>
+      <div class="scoreboard" id="smtBiasBoard" style="grid-template-columns:1fr 1fr;"></div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">SMT entry impact — trailing R</p>
+      <div class="scoreboard" id="smtEntryBoard" style="grid-template-columns:1fr 1fr;"></div>
     </div>
 
     <div class="filter-row">
@@ -477,7 +492,8 @@ let current = {
   direction: 'long',
   pattern: 'continuation',
   outcome: 'win',
-  smt: 'no',
+  smtBias: 'no',
+  smtEntry: 'no',
   instrument: 'NAS',
   tags: [],
   trail: 0, fixed: 0, target: 0, loss: -1,
@@ -528,7 +544,8 @@ function wireToggleRow(id, key){
 }
 wireToggleRow('directionRow','direction');
 wireToggleRow('patternRow','pattern');
-wireToggleRow('smtRow','smt');
+wireToggleRow('smtBiasRow','smtBias');
+wireToggleRow('smtEntryRow','smtEntry');
 
 function setOutcomeUI(val){
   document.getElementById('exitCard').style.display = val==='win' ? '' : 'none';
@@ -675,7 +692,8 @@ document.getElementById('saveTradeBtn').addEventListener('click', ()=>{
     direction: current.direction,
     pattern: current.pattern,
     outcome: current.outcome,
-    smt: current.smt,
+    smtBias: current.smtBias,
+    smtEntry: current.smtEntry,
     instrument: current.instrument,
     tags: [...current.tags],
     r_trail: isLoss ? current.loss : current.trail,
@@ -688,11 +706,12 @@ document.getElementById('saveTradeBtn').addEventListener('click', ()=>{
   toast('Trade saved ✓');
 
   // reset form (keep date)
-  current = { date: current.date, direction:'long', pattern:'continuation', outcome:'win', smt:'no', instrument:'NAS', tags:[], trail:0, fixed:0, target:0, loss:-1, images:[] };
+  current = { date: current.date, direction:'long', pattern:'continuation', outcome:'win', smtBias:'no', smtEntry:'no', instrument:'NAS', tags:[], trail:0, fixed:0, target:0, loss:-1, images:[] };
   document.querySelectorAll('#directionRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='long'));
   document.querySelectorAll('#patternRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='continuation'));
   document.querySelectorAll('#outcomeRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='win'));
-  document.querySelectorAll('#smtRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='no'));
+  document.querySelectorAll('#smtBiasRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='no'));
+  document.querySelectorAll('#smtEntryRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='no'));
   document.querySelectorAll('#instrumentRow .chip').forEach(c=>c.classList.toggle('on', c.dataset.val==='NAS'));
   document.querySelectorAll('#tagsRow .chip').forEach(c=>c.classList.remove('on'));
   setOutcomeUI('win');
@@ -724,8 +743,10 @@ function renderTrades(){
       t.direction===activeFilter ||
       t.pattern===activeFilter ||
       t.outcome===activeFilter ||
-      (activeFilter==='smt' && t.smt==='yes') ||
-      (activeFilter==='nosmt' && t.smt==='no')
+      (activeFilter==='smtbias' && t.smtBias==='yes') ||
+      (activeFilter==='nosmtbias' && t.smtBias==='no') ||
+      (activeFilter==='smtentry' && t.smtEntry==='yes') ||
+      (activeFilter==='nosmtentry' && t.smtEntry==='no')
     );
   }
   if(filtered.length === 0){
@@ -747,7 +768,8 @@ function renderTrades(){
           <span class="badge ${t.outcome||'win'}">${t.outcome||'win'}</span>
           <span class="badge ${t.direction}">${t.direction}</span>
           <span class="badge ${t.pattern==='continuation'?'cont':'rev'}">${t.pattern}</span>
-          ${t.smt==='yes' ? '<span class="badge smt">SMT</span>' : ''}
+          ${t.smtBias==='yes' ? '<span class="badge smt">SMT Bias</span>' : ''}
+          ${t.smtEntry==='yes' ? '<span class="badge smt">SMT Entry</span>' : ''}
         </div>
         <span class="trade-date">${t.date} · ${t.instrument}</span>
       </div>
@@ -878,14 +900,14 @@ function aggregate(list){
   };
 }
 
-function renderSmtBoard(){
-  const board = document.getElementById('smtBoard');
+function renderSmtBoardFor(field, elId){
+  const board = document.getElementById(elId);
   const groups = [
     {key:'yes', label:'With SMT'},
     {key:'no', label:'No SMT'}
   ];
   board.innerHTML = groups.map(g=>{
-    const list = trades.filter(t=>t.smt===g.key);
+    const list = trades.filter(t=>t[field]===g.key);
     const n = list.length;
     const wins = list.filter(t=>t.outcome==='win').length;
     const totalR = list.reduce((s,t)=>s+t.r_trail,0);
@@ -899,7 +921,8 @@ function renderSmtBoard(){
 }
 
 function renderStats(){
-  renderSmtBoard();
+  renderSmtBoardFor('smtBias', 'smtBiasBoard');
+  renderSmtBoardFor('smtEntry', 'smtEntryBoard');
   const scoreboard = document.getElementById('scoreboard');
   const detail = document.getElementById('overallDetail');
   if(trades.length===0){

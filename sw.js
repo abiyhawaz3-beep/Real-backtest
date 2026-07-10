@@ -1,4 +1,4 @@
-const CACHE = 'rrace-v1';
+const CACHE = 'rrace-v2';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e=>{
