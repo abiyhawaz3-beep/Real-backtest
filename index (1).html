@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>R-Race — Backtest Lab</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A0E17">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0E17; --surface:#121826; --surface2:#1B2436; --border:#26314A;
+  --text:#E7ECF6; --muted:#8592AC;
+  --teal:#2DD9C4; --blue:#5B8DEF; --amber:#F5B942;
+  --green:#3ED598; --red:#F2637A;
+  --radius:14px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-user-select:none; user-select:none;
+  overscroll-behavior-y:none;
+  padding-bottom:84px;
+}
+input,textarea{-webkit-user-select:text; user-select:text;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+
+/* HEADER */
+header.top{
+  position:sticky; top:0; z-index:20;
+  background:linear-gradient(180deg,#0A0E17 80%,rgba(10,14,23,0));
+  padding:18px 18px 10px;
+}
+.brand{display:flex; align-items:baseline; gap:8px;}
+.brand h1{font-size:19px; margin:0; letter-spacing:0.3px;}
+.brand .accent{color:var(--teal);}
+.brand small{color:var(--muted); font-size:12px; font-family:'IBM Plex Mono',monospace;}
+
+/* TABS CONTENT */
+main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
+.screen{display:none; animation:fade .18s ease;}
+.screen.active{display:block;}
+@keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px; margin-bottom:14px;
+}
+.section-label{
+  font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted);
+  margin:0 0 10px; font-weight:600;
+}
+
+/* TOGGLE ROWS */
+.toggle-row{display:flex; gap:8px;}
+.toggle-btn{
+  flex:1; padding:14px 8px; border-radius:10px; border:1.5px solid var(--border);
+  background:var(--surface2); color:var(--muted); font-weight:700; font-size:14px;
+  text-align:center; cursor:pointer; transition:.12s;
+}
+.toggle-btn.on{color:#0A0E17;}
+.toggle-btn.long.on{background:var(--green); border-color:var(--green);}
+.toggle-btn.short.on{background:var(--red); border-color:var(--red);}
+.toggle-btn.cont.on{background:var(--blue); border-color:var(--blue); color:#0A0E17;}
+.toggle-btn.rev.on{background:var(--amber); border-color:var(--amber); color:#0A0E17;}
+.toggle-btn.yes.on{background:var(--teal); border-color:var(--teal); color:#0A0E17;}
+.toggle-btn.no.on{background:var(--surface2); border-color:var(--muted); color:var(--text);}
+
+/* CHIPS */
+.chip-row{display:flex; flex-wrap:wrap; gap:8px;}
+.chip{
+  padding:9px 14px; border-radius:20px; border:1.5px solid var(--border);
+  background:var(--surface2); color:var(--muted); font-size:13px; font-weight:600; cursor:pointer;
+}
+.chip.on{background:var(--teal); border-color:var(--teal); color:#0A0E17;}
+
+/* STEPPERS */
+.method-block{margin-bottom:16px; padding:14px; border-radius:12px; background:var(--surface2); border:1px solid var(--border);}
+.method-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+.method-name{font-weight:700; font-size:13px;}
+.dot{width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:7px;}
+.dot.trail{background:var(--teal);} .dot.fixed{background:var(--blue);} .dot.target{background:var(--amber);}
+.rvalue{font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; min-width:70px; text-align:center;}
+.rvalue.pos{color:var(--green);} .rvalue.neg{color:var(--red);} .rvalue.zero{color:var(--muted);}
+.stepper{display:flex; align-items:center; gap:8px; justify-content:center;}
+.step-btn{
+  width:46px; height:46px; border-radius:10px; border:1.5px solid var(--border);
+  background:#141C2C; color:var(--text); font-size:17px; font-weight:700; cursor:pointer;
+}
+.step-btn:active{background:var(--surface2);}
+.presets{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; justify-content:center;}
+.preset-btn{
+  padding:7px 10px; border-radius:8px; border:1px solid var(--border); background:transparent;
+  color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:12px; cursor:pointer;
+}
+.preset-btn:active{background:var(--surface2);}
+
+/* IMAGE PASTE */
+.paste-zone{
+  border:2px dashed var(--border); border-radius:12px; padding:20px 14px; text-align:center;
+  color:var(--muted); font-size:13px; min-height:64px; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:6px; cursor:pointer;
+}
+.paste-zone.ready{border-color:var(--teal); color:var(--teal);}
+.thumbs{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+.thumb{position:relative; width:64px; height:64px; border-radius:8px; overflow:hidden; border:1px solid var(--border);}
+.thumb img{width:100%; height:100%; object-fit:cover;}
+.thumb .rm{
+  position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%;
+  background:rgba(0,0,0,.65); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center;
+}
+
+/* SAVE BUTTON */
+.save-btn{
+  width:100%; padding:16px; border-radius:12px; border:none; background:var(--teal); color:#0A0E17;
+  font-weight:800; font-size:15px; letter-spacing:.3px; cursor:pointer; margin-top:4px;
+}
+.save-btn:active{opacity:.85;}
+
+/* TRADES LIST */
+.trade-item{
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:13px 14px; margin-bottom:10px;
+}
+.trade-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+.trade-meta{display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+.badge{font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; text-transform:uppercase; letter-spacing:.4px;}
+.badge.long{background:rgba(62,213,152,.15); color:var(--green);}
+.badge.short{background:rgba(242,99,122,.15); color:var(--red);}
+.badge.cont{background:rgba(91,141,239,.15); color:var(--blue);}
+.badge.rev{background:rgba(245,185,66,.15); color:var(--amber);}
+.badge.win{background:rgba(62,213,152,.15); color:var(--green);}
+.badge.loss{background:rgba(242,99,122,.15); color:var(--red);}
+.badge.smt{background:rgba(45,217,196,.15); color:var(--teal);}
+.trade-date{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);}
+.race{display:flex; gap:4px; margin-top:10px; height:26px; align-items:flex-end;}
+.race-bar{flex:1; border-radius:5px 5px 2px 2px; position:relative; min-height:4px; display:flex; align-items:flex-start; justify-content:center;}
+.race-bar span{font-size:10px; font-family:'IBM Plex Mono',monospace; margin-top:-16px; font-weight:600;}
+.race-bar.trail{background:var(--teal);} .race-bar.fixed{background:var(--blue);} .race-bar.target{background:var(--amber);}
+.trade-tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:9px;}
+.tag-pill{font-size:10px; color:var(--muted); background:var(--surface2); padding:3px 8px; border-radius:6px;}
+.trade-actions{display:flex; gap:8px; margin-top:10px;}
+.mini-btn{flex:1; padding:9px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-size:12px; font-weight:700; text-align:center;}
+.mini-btn.danger{color:var(--red);}
+.empty{text-align:center; color:var(--muted); padding:50px 20px; font-size:14px;}
+
+/* FILTER PILLS */
+.filter-row{display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px;}
+.filter-pill{white-space:nowrap; padding:8px 14px; border-radius:20px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); font-size:12px; font-weight:700;}
+.filter-pill.on{background:var(--text); color:var(--bg);}
+
+/* STATS */
+.scoreboard{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px;}
+.score-card{background:var(--surface2); border-radius:12px; padding:12px 8px; text-align:center; border:2px solid transparent;}
+.score-card.winner{border-color:var(--teal);}
+.score-card .label{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;}
+.score-card .big{font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:700;}
+.score-card .sub{font-size:10px; color:var(--muted); margin-top:3px;}
+.period-card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px;}
+.period-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+.period-title{font-weight:700; font-size:13px;}
+.period-count{font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.period-row{display:flex; justify-content:space-between; align-items:center; padding:5px 0; font-size:12px;}
+.period-row .m-name{color:var(--muted); display:flex; align-items:center;}
+.period-row .m-val{font-family:'IBM Plex Mono',monospace; font-weight:600;}
+
+/* BOTTOM NAV */
+nav.bottom{
+  position:fixed; bottom:0; left:0; right:0; z-index:30;
+  background:rgba(18,24,38,.92); backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);
+  display:flex; padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+}
+.nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 0; color:var(--muted); font-size:11px; font-weight:600; border-radius:10px;}
+.nav-btn.active{color:var(--teal);}
+.nav-btn svg{width:22px; height:22px;}
+
+/* TOP ACTIONS */
+.top-actions{display:flex; gap:8px;}
+.icon-btn{width:38px; height:38px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--muted);}
+.headerflex{display:flex; justify-content:space-between; align-items:center;}
+
+/* MODAL */
+.modal-bg{position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; align-items:flex-end;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--surface); border-radius:18px 18px 0 0; width:100%; padding:20px; max-height:85vh; overflow-y:auto;}
+.modal h3{margin:0 0 14px;}
+.full-img{width:100%; border-radius:10px; margin-bottom:8px;}
+.toast{
+  position:fixed; bottom:96px; left:50%; transform:translateX(-50%); background:var(--surface2); border:1px solid var(--border);
+  color:var(--text); padding:10px 18px; border-radius:20px; font-size:13px; z-index:60; opacity:0; transition:.25s; pointer-events:none;
+}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="headerflex">
+    <div class="brand">
+      <h1>R-<span class="accent">Race</span></h1>
+      <small>backtest lab</small>
+    </div>
+    <div class="top-actions">
+      <div class="icon-btn" id="exportBtn">⇩</div>
+      <div class="icon-btn" id="importBtn">⇧</div>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+  </div>
+</header>
+
+<main>
+
+  <!-- LOG SCREEN -->
+  <section class="screen active" id="screen-log">
+    <div class="card">
+      <p class="section-label">Date</p>
+      <input type="date" id="tradeDate" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:15px;">
+    </div>
+
+    <div class="card">
+      <p class="section-label">Direction</p>
+      <div class="toggle-row" id="directionRow">
+        <div class="toggle-btn long on" data-val="long">LONG</div>
+        <div class="toggle-btn short" data-val="short">SHORT</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Setup type</p>
+      <div class="toggle-row" id="patternRow">
+        <div class="toggle-btn cont on" data-val="continuation">CONTINUATION</div>
+        <div class="toggle-btn rev" data-val="reversal">REVERSAL</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Outcome</p>
+      <div class="toggle-row" id="outcomeRow">
+        <div class="toggle-btn long on" data-val="win">WIN</div>
+        <div class="toggle-btn short" data-val="loss">LOSS</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">SMT divergence present?</p>
+      <div class="toggle-row" id="smtRow">
+        <div class="toggle-btn yes" data-val="yes">SMT</div>
+        <div class="toggle-btn no on" data-val="no">NO SMT</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Instrument</p>
+      <div class="chip-row" id="instrumentRow">
+        <div class="chip on" data-val="NAS">NAS</div>
+        <div class="chip" data-val="SPX">SPX</div>
+        <div class="chip" data-val="GOLD">GOLD</div>
+        <div class="chip" data-val="OTHER">OTHER</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Liquidity taken</p>
+      <div class="chip-row" id="tagsRow">
+        <div class="chip" data-val="London High">London High</div>
+        <div class="chip" data-val="London Low">London Low</div>
+        <div class="chip" data-val="Asia High">Asia High</div>
+        <div class="chip" data-val="Asia Low">Asia Low</div>
+        <div class="chip" data-val="High after 8:30">High after 8:30</div>
+        <div class="chip" data-val="Low after 8:30">Low after 8:30</div>
+        <div class="chip" data-val="PDH">PDH</div>
+        <div class="chip" data-val="PDL">PDL</div>
+        <div class="chip" data-val="PWH">PWH</div>
+        <div class="chip" data-val="PWL">PWL</div>
+        <div class="chip" data-val="Random High">Random High</div>
+        <div class="chip" data-val="Random Low">Random Low</div>
+      </div>
+    </div>
+
+    <div class="card" id="exitCard">
+      <p class="section-label">Exit method comparison — how would each have performed?</p>
+
+      <div class="method-block">
+        <div class="method-head">
+          <span class="method-name"><span class="dot trail"></span>Trailing stop (actual)</span>
+          <span class="rvalue zero mono" id="val-trail">0.0R</span>
+        </div>
+        <div class="stepper">
+          <div class="step-btn" data-target="trail" data-delta="-1">−1</div>
+          <div class="step-btn" data-target="trail" data-delta="-0.1">−.1</div>
+          <div class="step-btn" data-target="trail" data-delta="0.1">+.1</div>
+          <div class="step-btn" data-target="trail" data-delta="1">+1</div>
+        </div>
+        <div class="presets" data-target="trail">
+          <div class="preset-btn" data-set="-1">-1R</div>
+          <div class="preset-btn" data-set="0">BE</div>
+          <div class="preset-btn" data-set="1">+1R</div>
+          <div class="preset-btn" data-set="2">+2R</div>
+          <div class="preset-btn" data-set="3">+3R</div>
+          <div class="preset-btn" data-set="5">+5R</div>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-head">
+          <span class="method-name"><span class="dot fixed"></span>Fixed 3R exit</span>
+          <span class="rvalue zero mono" id="val-fixed">0.0R</span>
+        </div>
+        <div class="stepper">
+          <div class="step-btn" data-target="fixed" data-delta="-1">−1</div>
+          <div class="step-btn" data-target="fixed" data-delta="-0.1">−.1</div>
+          <div class="step-btn" data-target="fixed" data-delta="0.1">+.1</div>
+          <div class="step-btn" data-target="fixed" data-delta="1">+1</div>
+        </div>
+        <div class="presets" data-target="fixed">
+          <div class="preset-btn" data-set="-1">-1R</div>
+          <div class="preset-btn" data-set="0">BE</div>
+          <div class="preset-btn" data-set="3">+3R</div>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-head">
+          <span class="method-name"><span class="dot target"></span>Full planned target</span>
+          <span class="rvalue zero mono" id="val-target">0.0R</span>
+        </div>
+        <div class="stepper">
+          <div class="step-btn" data-target="target" data-delta="-1">−1</div>
+          <div class="step-btn" data-target="target" data-delta="-0.1">−.1</div>
+          <div class="step-btn" data-target="target" data-delta="0.1">+.1</div>
+          <div class="step-btn" data-target="target" data-delta="1">+1</div>
+        </div>
+        <div class="presets" data-target="target">
+          <div class="preset-btn" data-set="-1">-1R</div>
+          <div class="preset-btn" data-set="0">BE</div>
+          <div class="preset-btn" data-set="4">+4R</div>
+          <div class="preset-btn" data-set="6">+6R</div>
+          <div class="preset-btn" data-set="8">+8R</div>
+          <div class="preset-btn" data-set="10">+10R</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="lossCard" style="display:none;">
+      <p class="section-label">Loss size — same across all exit methods</p>
+      <div class="method-block">
+        <div class="method-head">
+          <span class="method-name"><span class="dot" style="background:var(--red)"></span>Loss (R)</span>
+          <span class="rvalue neg mono" id="val-loss">-1.0R</span>
+        </div>
+        <div class="stepper">
+          <div class="step-btn" data-target="loss" data-delta="-1">−1</div>
+          <div class="step-btn" data-target="loss" data-delta="-0.1">−.1</div>
+          <div class="step-btn" data-target="loss" data-delta="0.1">+.1</div>
+          <div class="step-btn" data-target="loss" data-delta="1">+1</div>
+        </div>
+        <div class="presets" data-target="loss">
+          <div class="preset-btn" data-set="-1">-1R</div>
+          <div class="preset-btn" data-set="-0.5">-0.5R</div>
+          <div class="preset-btn" data-set="0">BE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Chart screenshots — tap box, then paste</p>
+      <div class="paste-zone" id="pasteZone" contenteditable="true" tabindex="0">
+        <div>📋 Tap here, then long-press → Paste</div>
+        <div style="font-size:11px;">or use button below</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <div class="mini-btn" id="clipboardBtn" style="flex:1;">Paste from clipboard</div>
+        <div class="mini-btn" id="fileBtn" style="flex:1;">Choose photo</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+
+    <button class="save-btn" id="saveTradeBtn">Save trade</button>
+  </section>
+
+  <!-- TRADES SCREEN -->
+  <section class="screen" id="screen-trades">
+    <div class="filter-row" id="filterRow">
+      <div class="filter-pill on" data-filter="all">All</div>
+      <div class="filter-pill" data-filter="long">Long</div>
+      <div class="filter-pill" data-filter="short">Short</div>
+      <div class="filter-pill" data-filter="continuation">Continuation</div>
+      <div class="filter-pill" data-filter="reversal">Reversal</div>
+      <div class="filter-pill" data-filter="win">Win</div>
+      <div class="filter-pill" data-filter="loss">Loss</div>
+      <div class="filter-pill" data-filter="smt">SMT</div>
+      <div class="filter-pill" data-filter="nosmt">No SMT</div>
+    </div>
+    <div id="tradesList"></div>
+  </section>
+
+  <!-- STATS SCREEN -->
+  <section class="screen" id="screen-stats">
+    <div class="card">
+      <p class="section-label">Best exit method overall</p>
+      <div class="scoreboard" id="scoreboard"></div>
+      <div id="overallDetail" style="font-size:12px; color:var(--muted); line-height:1.6;"></div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">SMT impact — trailing R</p>
+      <div class="scoreboard" id="smtBoard" style="grid-template-columns:1fr 1fr;"></div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-pill on" data-view="monthly">Monthly</div>
+      <div class="filter-pill" data-view="weekly">Weekly</div>
+    </div>
+    <div id="periodList"></div>
+  </section>
+
+</main>
+
+<div class="modal-bg" id="imgModalBg">
+  <div class="modal">
+    <h3>Screenshots</h3>
+    <div id="imgModalContent"></div>
+    <div class="mini-btn" id="closeModal" style="margin-top:10px;">Close</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav class="bottom">
+  <div class="nav-btn active" data-screen="log">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    Log
+  </div>
+  <div class="nav-btn" data-screen="trades">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    Trades
+  </div>
+  <div class="nav-btn" data-screen="stats">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+    Stats
+  </div>
+</nav>
+
+<script>
+/* ---------------- STATE ---------------- */
+const STORAGE_KEY = 'rrace_trades_v1';
+let trades = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let current = {
+  date: new Date().toISOString().slice(0,10),
+  direction: 'long',
+  pattern: 'continuation',
+  outcome: 'win',
+  smt: 'no',
+  instrument: 'NAS',
+  tags: [],
+  trail: 0, fixed: 0, target: 0, loss: -1,
+  images: []
+};
+let activeFilter = 'all';
+let activeView = 'monthly';
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(trades)); }
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+/* ---------------- NAV ---------------- */
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('screen-'+btn.dataset.screen).classList.add('active');
+    if(btn.dataset.screen === 'trades') renderTrades();
+    if(btn.dataset.screen === 'stats') renderStats();
+  });
+});
+
+/* ---------------- LOG FORM ---------------- */
+document.getElementById('tradeDate').value = current.date;
+document.getElementById('tradeDate').addEventListener('change', e=> current.date = e.target.value);
+
+function wireToggleRow(id, key){
+  document.getElementById(id).querySelectorAll('.toggle-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.getElementById(id).querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      current[key] = btn.dataset.val;
+    });
+  });
+}
+wireToggleRow('directionRow','direction');
+wireToggleRow('patternRow','pattern');
+wireToggleRow('smtRow','smt');
+
+function setOutcomeUI(val){
+  document.getElementById('exitCard').style.display = val==='win' ? '' : 'none';
+  document.getElementById('lossCard').style.display = val==='loss' ? '' : 'none';
+}
+document.getElementById('outcomeRow').querySelectorAll('.toggle-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.getElementById('outcomeRow').querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    current.outcome = btn.dataset.val;
+    setOutcomeUI(current.outcome);
+  });
+});
+
+document.getElementById('instrumentRow').querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.getElementById('instrumentRow').querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+    chip.classList.add('on');
+    current.instrument = chip.dataset.val;
+  });
+});
+
+document.getElementById('tagsRow').querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    chip.classList.toggle('on');
+    const v = chip.dataset.val;
+    if(current.tags.includes(v)) current.tags = current.tags.filter(t=>t!==v);
+    else current.tags.push(v);
+  });
+});
+
+function updateRDisplay(target){
+  const el = document.getElementById('val-'+target);
+  const v = current[target];
+  el.textContent = (v>0?'+':'') + v.toFixed(1) + 'R';
+  el.classList.remove('pos','neg','zero');
+  el.classList.add(v>0?'pos':v<0?'neg':'zero');
+}
+['trail','fixed','target','loss'].forEach(updateRDisplay);
+
+document.querySelectorAll('.step-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const t = btn.dataset.target, d = parseFloat(btn.dataset.delta);
+    current[t] = Math.round((current[t] + d)*10)/10;
+    updateRDisplay(t);
+  });
+});
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const t = btn.closest('.presets').dataset.target;
+    current[t] = parseFloat(btn.dataset.set);
+    updateRDisplay(t);
+  });
+});
+
+/* ---------------- IMAGE PASTE ---------------- */
+function compressImage(dataUrl, cb){
+  const img = new Image();
+  img.onload = ()=>{
+    const maxW = 800;
+    const scale = Math.min(1, maxW/img.width);
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width*scale;
+    canvas.height = img.height*scale;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    cb(canvas.toDataURL('image/jpeg', 0.6));
+  };
+  img.src = dataUrl;
+}
+function addImageFile(file){
+  const reader = new FileReader();
+  reader.onload = e=>{
+    compressImage(e.target.result, compressed=>{
+      current.images.push({id: Date.now()+Math.random(), src: compressed});
+      renderThumbs();
+      toast('Screenshot added');
+    });
+  };
+  reader.readAsDataURL(file);
+}
+function renderThumbs(){
+  const wrap = document.getElementById('thumbs');
+  wrap.innerHTML = '';
+  current.images.forEach(img=>{
+    const d = document.createElement('div');
+    d.className = 'thumb';
+    d.innerHTML = `<img src="${img.src}"><div class="rm" data-id="${img.id}">✕</div>`;
+    wrap.appendChild(d);
+  });
+  wrap.querySelectorAll('.rm').forEach(rm=>{
+    rm.addEventListener('click', e=>{
+      e.stopPropagation();
+      current.images = current.images.filter(i=>i.id != rm.dataset.id);
+      renderThumbs();
+    });
+  });
+  document.getElementById('pasteZone').classList.toggle('ready', current.images.length>0);
+}
+
+const pasteZone = document.getElementById('pasteZone');
+pasteZone.addEventListener('paste', e=>{
+  e.preventDefault();
+  const items = (e.clipboardData || window.clipboardData).items;
+  for(const item of items){
+    if(item.type.indexOf('image')===0){
+      addImageFile(item.getAsFile());
+    }
+  }
+  pasteZone.innerHTML = '<div>📋 Tap here, then long-press → Paste</div><div style="font-size:11px;">or use button below</div>';
+});
+
+document.getElementById('clipboardBtn').addEventListener('click', async ()=>{
+  try{
+    const items = await navigator.clipboard.read();
+    let found = false;
+    for(const item of items){
+      for(const type of item.types){
+        if(type.startsWith('image/')){
+          const blob = await item.getType(type);
+          addImageFile(blob);
+          found = true;
+        }
+      }
+    }
+    if(!found) toast('No image found in clipboard');
+  }catch(err){
+    toast('Tap the paste box instead, then long-press → Paste');
+  }
+});
+
+document.getElementById('fileBtn').addEventListener('click', ()=> document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', e=>{
+  Array.from(e.target.files).forEach(addImageFile);
+  e.target.value = '';
+});
+
+/* ---------------- SAVE TRADE ---------------- */
+document.getElementById('saveTradeBtn').addEventListener('click', ()=>{
+  const isLoss = current.outcome === 'loss';
+  const trade = {
+    id: Date.now(),
+    date: current.date,
+    direction: current.direction,
+    pattern: current.pattern,
+    outcome: current.outcome,
+    smt: current.smt,
+    instrument: current.instrument,
+    tags: [...current.tags],
+    r_trail: isLoss ? current.loss : current.trail,
+    r_fixed: isLoss ? current.loss : current.fixed,
+    r_target: isLoss ? current.loss : current.target,
+    images: current.images.map(i=>i.src)
+  };
+  trades.unshift(trade);
+  save();
+  toast('Trade saved ✓');
+
+  // reset form (keep date)
+  current = { date: current.date, direction:'long', pattern:'continuation', outcome:'win', smt:'no', instrument:'NAS', tags:[], trail:0, fixed:0, target:0, loss:-1, images:[] };
+  document.querySelectorAll('#directionRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='long'));
+  document.querySelectorAll('#patternRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='continuation'));
+  document.querySelectorAll('#outcomeRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='win'));
+  document.querySelectorAll('#smtRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='no'));
+  document.querySelectorAll('#instrumentRow .chip').forEach(c=>c.classList.toggle('on', c.dataset.val==='NAS'));
+  document.querySelectorAll('#tagsRow .chip').forEach(c=>c.classList.remove('on'));
+  setOutcomeUI('win');
+  ['trail','fixed','target','loss'].forEach(updateRDisplay);
+  renderThumbs();
+});
+
+/* ---------------- TRADES LIST ---------------- */
+document.getElementById('filterRow').querySelectorAll('.filter-pill').forEach(p=>{
+  p.addEventListener('click', ()=>{
+    document.getElementById('filterRow').querySelectorAll('.filter-pill').forEach(x=>x.classList.remove('on'));
+    p.classList.add('on');
+    activeFilter = p.dataset.filter;
+    renderTrades();
+  });
+});
+
+function methodWinner(t){
+  const vals = {trail: t.r_trail, fixed: t.r_fixed, target: t.r_target};
+  const max = Math.max(vals.trail, vals.fixed, vals.target);
+  return Object.keys(vals).find(k=>vals[k]===max);
+}
+
+function renderTrades(){
+  const list = document.getElementById('tradesList');
+  let filtered = trades;
+  if(activeFilter !== 'all'){
+    filtered = trades.filter(t =>
+      t.direction===activeFilter ||
+      t.pattern===activeFilter ||
+      t.outcome===activeFilter ||
+      (activeFilter==='smt' && t.smt==='yes') ||
+      (activeFilter==='nosmt' && t.smt==='no')
+    );
+  }
+  if(filtered.length === 0){
+    list.innerHTML = '<div class="empty">No trades logged yet.<br>Head to Log to add your first one.</div>';
+    return;
+  }
+  const maxAbs = Math.max(1, ...filtered.map(t=>Math.max(Math.abs(t.r_trail),Math.abs(t.r_fixed),Math.abs(t.r_target))));
+  list.innerHTML = filtered.map(t=>{
+    const winner = methodWinner(t);
+    const bar = (val, cls)=>{
+      const h = Math.max(4, (Math.abs(val)/maxAbs)*22);
+      return `<div class="race-bar ${cls}" style="height:${h}px; opacity:${winner===cls?1:0.45}"><span>${val>0?'+':''}${val.toFixed(1)}</span></div>`;
+    };
+    return `
+    <div class="trade-item" data-id="${t.id}">
+      <div class="trade-top">
+        <div class="trade-meta">
+          <span class="badge ${t.outcome||'win'}">${t.outcome||'win'}</span>
+          <span class="badge ${t.direction}">${t.direction}</span>
+          <span class="badge ${t.pattern==='continuation'?'cont':'rev'}">${t.pattern}</span>
+          ${t.smt==='yes' ? '<span class="badge smt">SMT</span>' : ''}
+        </div>
+        <span class="trade-date">${t.date} · ${t.instrument}</span>
+      </div>
+      <div class="race">
+        ${bar(t.r_trail,'trail')}
+        ${bar(t.r_fixed,'fixed')}
+        ${bar(t.r_target,'target')}
+      </div>
+      ${t.tags.length ? `<div class="trade-tags">${t.tags.map(tag=>`<span class="tag-pill">${tag}</span>`).join('')}</div>` : ''}
+      <div class="trade-actions">
+        ${t.images.length ? `<div class="mini-btn view-imgs">📷 ${t.images.length}</div>` : ''}
+        <div class="mini-btn danger del-trade">Delete</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.del-trade').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.closest('.trade-item').dataset.id;
+      trades = trades.filter(t=>t.id != id);
+      save(); renderTrades();
+      toast('Trade deleted');
+    });
+  });
+  list.querySelectorAll('.view-imgs').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.closest('.trade-item').dataset.id;
+      const t = trades.find(tr=>tr.id == id);
+      document.getElementById('imgModalContent').innerHTML = t.images.map(src=>`<img class="full-img" src="${src}">`).join('');
+      document.getElementById('imgModalBg').classList.add('show');
+    });
+  });
+}
+document.getElementById('closeModal').addEventListener('click', ()=> document.getElementById('imgModalBg').classList.remove('show'));
+document.getElementById('imgModalBg').addEventListener('click', e=>{ if(e.target.id==='imgModalBg') e.target.classList.remove('show'); });
+
+/* ---------------- STATS ---------------- */
+document.querySelectorAll('[data-view]').forEach(p=>{
+  p.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-view]').forEach(x=>x.classList.remove('on'));
+    p.classList.add('on');
+    activeView = p.dataset.view;
+    renderStats();
+  });
+});
+
+function isoWeekKey(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  const target = new Date(d.valueOf());
+  const dayNr = (d.getDay()+6)%7;
+  target.setDate(target.getDate()-dayNr+3);
+  const firstThursday = new Date(target.getFullYear(),0,4);
+  const weekNr = 1 + Math.round(((target-firstThursday)/86400000 - 3 + ((firstThursday.getDay()+6)%7))/7);
+  return `${target.getFullYear()}-W${String(weekNr).padStart(2,'0')}`;
+}
+function monthKey(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  return d.toLocaleString('en-US',{month:'short', year:'numeric'});
+}
+
+function aggregate(list){
+  const sums = {trail:0, fixed:0, target:0};
+  const wins = {trail:0, fixed:0, target:0};
+  list.forEach(t=>{
+    sums.trail += t.r_trail; sums.fixed += t.r_fixed; sums.target += t.r_target;
+    if(t.r_trail>0) wins.trail++; if(t.r_fixed>0) wins.fixed++; if(t.r_target>0) wins.target++;
+  });
+  const n = list.length || 1;
+  return {
+    sums, wins, count: list.length,
+    winrate: { trail: wins.trail/n*100, fixed: wins.fixed/n*100, target: wins.target/n*100 },
+    avg: { trail: sums.trail/n, fixed: sums.fixed/n, target: sums.target/n }
+  };
+}
+
+function renderSmtBoard(){
+  const board = document.getElementById('smtBoard');
+  const groups = [
+    {key:'yes', label:'With SMT'},
+    {key:'no', label:'No SMT'}
+  ];
+  board.innerHTML = groups.map(g=>{
+    const list = trades.filter(t=>t.smt===g.key);
+    const n = list.length;
+    const wins = list.filter(t=>t.outcome==='win').length;
+    const totalR = list.reduce((s,t)=>s+t.r_trail,0);
+    const wr = n ? (wins/n*100) : 0;
+    return `<div class="score-card">
+      <div class="label">${g.label}</div>
+      <div class="big">${n ? (totalR>0?'+':'')+totalR.toFixed(1)+'R' : '—'}</div>
+      <div class="sub">${n} trades · ${wr.toFixed(0)}% WR</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStats(){
+  renderSmtBoard();
+  const scoreboard = document.getElementById('scoreboard');
+  const detail = document.getElementById('overallDetail');
+  if(trades.length===0){
+    scoreboard.innerHTML = '';
+    detail.innerHTML = '<div class="empty">No trades yet — log a few to see stats.</div>';
+    document.getElementById('periodList').innerHTML = '';
+    return;
+  }
+  const agg = aggregate(trades);
+  const methods = [
+    {key:'trail', name:'Trailing', dot:'trail'},
+    {key:'fixed', name:'Fixed 3R', dot:'fixed'},
+    {key:'target', name:'Target', dot:'target'}
+  ];
+  const bestKey = methods.reduce((a,b)=> agg.sums[a.key] > agg.sums[b.key] ? a : b).key;
+
+  scoreboard.innerHTML = methods.map(m=>`
+    <div class="score-card ${m.key===bestKey?'winner':''}">
+      <div class="label"><span class="dot ${m.dot}"></span>${m.name}</div>
+      <div class="big">${agg.sums[m.key]>0?'+':''}${agg.sums[m.key].toFixed(1)}R</div>
+      <div class="sub">${agg.winrate[m.key].toFixed(0)}% WR · avg ${agg.avg[m.key].toFixed(2)}R</div>
+    </div>
+  `).join('');
+
+  detail.innerHTML = `Across <strong>${trades.length}</strong> logged trades, <strong>${methods.find(m=>m.key===bestKey).name}</strong> exits produced the highest total R. Bars in the Trades tab highlight the winning method per trade.`;
+
+  const periodList = document.getElementById('periodList');
+  const groups = {};
+  trades.forEach(t=>{
+    const key = activeView === 'monthly' ? monthKey(t.date) : isoWeekKey(t.date);
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  const orderedKeys = Object.keys(groups).sort((a,b)=>{
+    const da = new Date(groups[a][0].date), db = new Date(groups[b][0].date);
+    return db - da;
+  });
+
+  periodList.innerHTML = orderedKeys.map(key=>{
+    const a = aggregate(groups[key]);
+    const best = methods.reduce((x,y)=> a.sums[x.key] > a.sums[y.key] ? x : y).key;
+    return `
+    <div class="period-card">
+      <div class="period-head">
+        <span class="period-title">${key}</span>
+        <span class="period-count">${groups[key].length} trades</span>
+      </div>
+      ${methods.map(m=>`
+        <div class="period-row">
+          <span class="m-name"><span class="dot ${m.dot}"></span>${m.name}${m.key===best?' 🏆':''}</span>
+          <span class="m-val" style="color:${a.sums[m.key]>=0?'var(--green)':'var(--red)'}">${a.sums[m.key]>0?'+':''}${a.sums[m.key].toFixed(1)}R (${a.winrate[m.key].toFixed(0)}%)</span>
+        </div>
+      `).join('')}
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- EXPORT / IMPORT ---------------- */
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(trades, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `rrace-backtest-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  toast('Exported');
+});
+document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const imported = JSON.parse(ev.target.result);
+      if(Array.isArray(imported)){
+        trades = [...imported, ...trades];
+        save();
+        toast(`Imported ${imported.length} trades`);
+        renderTrades(); renderStats();
+      }
+    }catch(err){ toast('Invalid file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ---------------- PWA ---------------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+renderThumbs();
+</script>
+</body>
+</html>
