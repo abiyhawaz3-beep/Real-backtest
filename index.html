@@ -5,22 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>R-Race — Backtest Lab</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0A0E17">
+<meta name="theme-color" content="#1B2032">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0A0E17; --surface:#121826; --surface2:#1B2436; --border:#26314A;
-  --text:#E7ECF6; --muted:#8592AC;
-  --teal:#2DD9C4; --blue:#5B8DEF; --amber:#F5B942;
-  --green:#3ED598; --red:#F2637A;
-  --radius:14px;
+  --bg:#1B2032; --surface:#252C42; --surface2:#2F3752; --border:#3D4666;
+  --text:#EEF0F8; --muted:#9AA3C2;
+  --teal:#4FE0C7; --blue:#7B9EFA; --amber:#F7C767;
+  --green:#54E0A3; --red:#F4879A;
+  --radius:16px;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}
 body{
-  margin:0; background:var(--bg); color:var(--text);
+  margin:0; background:radial-gradient(ellipse at top,#232A42 0%,var(--bg) 55%); color:var(--text);
   font-family:'Inter',system-ui,sans-serif;
   -webkit-user-select:none; user-select:none;
   overscroll-behavior-y:none;
@@ -32,7 +32,7 @@ input,textarea{-webkit-user-select:text; user-select:text;}
 /* HEADER */
 header.top{
   position:sticky; top:0; z-index:20;
-  background:linear-gradient(180deg,#0A0E17 80%,rgba(10,14,23,0));
+  background:linear-gradient(180deg,#1B2032 78%,rgba(27,32,50,0));
   padding:18px 18px 10px;
 }
 .brand{display:flex; align-items:baseline; gap:8px;}
@@ -49,6 +49,7 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 .card{
   background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
   padding:16px; margin-bottom:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
 }
 .section-label{
   font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted);
@@ -123,7 +124,8 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 
 /* TRADES LIST */
 .trade-item{
-  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:13px 14px; margin-bottom:10px;
+  background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:13px 14px; margin-bottom:10px;
+  box-shadow:0 4px 14px rgba(0,0,0,.15);
 }
 .trade-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
 .trade-meta{display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
@@ -185,8 +187,9 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 /* BOTTOM NAV */
 nav.bottom{
   position:fixed; bottom:0; left:0; right:0; z-index:30;
-  background:rgba(18,24,38,.92); backdrop-filter:blur(10px);
+  background:rgba(37,44,66,.92); backdrop-filter:blur(12px);
   border-top:1px solid var(--border);
+  box-shadow:0 -8px 24px rgba(0,0,0,.25);
   display:flex; padding:8px 10px calc(8px + env(safe-area-inset-bottom));
 }
 .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 0; color:var(--muted); font-size:11px; font-weight:600; border-radius:10px;}
