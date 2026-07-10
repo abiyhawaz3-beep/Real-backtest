@@ -67,6 +67,8 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 .toggle-btn.short.on{background:var(--red); border-color:var(--red);}
 .toggle-btn.cont.on{background:var(--blue); border-color:var(--blue); color:#0A0E17;}
 .toggle-btn.rev.on{background:var(--amber); border-color:var(--amber); color:#0A0E17;}
+.toggle-btn.yes.on{background:var(--teal); border-color:var(--teal); color:#0A0E17;}
+.toggle-btn.no.on{background:var(--surface2); border-color:var(--muted); color:var(--text);}
 
 /* CHIPS */
 .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
@@ -130,6 +132,9 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 .badge.short{background:rgba(242,99,122,.15); color:var(--red);}
 .badge.cont{background:rgba(91,141,239,.15); color:var(--blue);}
 .badge.rev{background:rgba(245,185,66,.15); color:var(--amber);}
+.badge.win{background:rgba(62,213,152,.15); color:var(--green);}
+.badge.loss{background:rgba(242,99,122,.15); color:var(--red);}
+.badge.smt{background:rgba(45,217,196,.15); color:var(--teal);}
 .trade-date{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);}
 .race{display:flex; gap:4px; margin-top:10px; height:26px; align-items:flex-end;}
 .race-bar{flex:1; border-radius:5px 5px 2px 2px; position:relative; min-height:4px; display:flex; align-items:flex-start; justify-content:center;}
@@ -141,6 +146,21 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 .mini-btn{flex:1; padding:9px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-size:12px; font-weight:700; text-align:center;}
 .mini-btn.danger{color:var(--red);}
 .empty{text-align:center; color:var(--muted); padding:50px 20px; font-size:14px;}
+
+/* COLLAPSIBLE HISTORY GROUPS */
+.month-group{margin-bottom:12px;}
+.group-header{
+  display:flex; align-items:center; gap:10px; padding:13px 14px;
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; cursor:pointer;
+}
+.group-header.month-header{background:var(--surface2);}
+.group-header.open{border-color:var(--teal);}
+.group-header .chevron{color:var(--teal); font-size:11px; width:10px; transition:transform .15s;}
+.group-header .group-title{flex:1; font-weight:700; font-size:13px;}
+.group-header .group-count{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted);}
+.week-group{margin:8px 0 8px 16px;}
+.group-header.week-header{padding:10px 12px; font-size:12px;}
+.group-body{padding-top:8px;}
 
 /* FILTER PILLS */
 .filter-row{display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px;}
@@ -213,7 +233,11 @@ nav.bottom{
   <section class="screen active" id="screen-log">
     <div class="card">
       <p class="section-label">Date</p>
-      <input type="date" id="tradeDate" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:15px;">
+      <div class="stepper" style="justify-content:space-between;">
+        <div class="step-btn" id="dateMinus">−</div>
+        <input type="date" id="tradeDate" style="flex:1;text-align:center;padding:12px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:15px;">
+        <div class="step-btn" id="datePlus">+</div>
+      </div>
     </div>
 
     <div class="card">
@@ -233,6 +257,22 @@ nav.bottom{
     </div>
 
     <div class="card">
+      <p class="section-label">Outcome</p>
+      <div class="toggle-row" id="outcomeRow">
+        <div class="toggle-btn long on" data-val="win">WIN</div>
+        <div class="toggle-btn short" data-val="loss">LOSS</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">SMT divergence present?</p>
+      <div class="toggle-row" id="smtRow">
+        <div class="toggle-btn yes" data-val="yes">SMT</div>
+        <div class="toggle-btn no on" data-val="no">NO SMT</div>
+      </div>
+    </div>
+
+    <div class="card">
       <p class="section-label">Instrument</p>
       <div class="chip-row" id="instrumentRow">
         <div class="chip on" data-val="NAS">NAS</div>
@@ -243,20 +283,24 @@ nav.bottom{
     </div>
 
     <div class="card">
-      <p class="section-label">Tags</p>
+      <p class="section-label">Liquidity taken</p>
       <div class="chip-row" id="tagsRow">
-        <div class="chip" data-val="FVG">FVG</div>
-        <div class="chip" data-val="Liquidity Sweep">Liquidity Sweep</div>
-        <div class="chip" data-val="Judas Swing">Judas Swing</div>
-        <div class="chip" data-val="Reclaim">Reclaim</div>
-        <div class="chip" data-val="News">News</div>
-        <div class="chip" data-val="FOMO">FOMO</div>
-        <div class="chip" data-val="Late Entry">Late Entry</div>
-        <div class="chip" data-val="A+ Setup">A+ Setup</div>
+        <div class="chip" data-val="London High">London High</div>
+        <div class="chip" data-val="London Low">London Low</div>
+        <div class="chip" data-val="Asia High">Asia High</div>
+        <div class="chip" data-val="Asia Low">Asia Low</div>
+        <div class="chip" data-val="High after 8:30">High after 8:30</div>
+        <div class="chip" data-val="Low after 8:30">Low after 8:30</div>
+        <div class="chip" data-val="PDH">PDH</div>
+        <div class="chip" data-val="PDL">PDL</div>
+        <div class="chip" data-val="PWH">PWH</div>
+        <div class="chip" data-val="PWL">PWL</div>
+        <div class="chip" data-val="Random High">Random High</div>
+        <div class="chip" data-val="Random Low">Random Low</div>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="exitCard">
       <p class="section-label">Exit method comparison — how would each have performed?</p>
 
       <div class="method-block">
@@ -320,6 +364,27 @@ nav.bottom{
       </div>
     </div>
 
+    <div class="card" id="lossCard" style="display:none;">
+      <p class="section-label">Loss size — same across all exit methods</p>
+      <div class="method-block">
+        <div class="method-head">
+          <span class="method-name"><span class="dot" style="background:var(--red)"></span>Loss (R)</span>
+          <span class="rvalue neg mono" id="val-loss">-1.0R</span>
+        </div>
+        <div class="stepper">
+          <div class="step-btn" data-target="loss" data-delta="-1">−1</div>
+          <div class="step-btn" data-target="loss" data-delta="-0.1">−.1</div>
+          <div class="step-btn" data-target="loss" data-delta="0.1">+.1</div>
+          <div class="step-btn" data-target="loss" data-delta="1">+1</div>
+        </div>
+        <div class="presets" data-target="loss">
+          <div class="preset-btn" data-set="-1">-1R</div>
+          <div class="preset-btn" data-set="-0.5">-0.5R</div>
+          <div class="preset-btn" data-set="0">BE</div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <p class="section-label">Chart screenshots — tap box, then paste</p>
       <div class="paste-zone" id="pasteZone" contenteditable="true" tabindex="0">
@@ -345,6 +410,10 @@ nav.bottom{
       <div class="filter-pill" data-filter="short">Short</div>
       <div class="filter-pill" data-filter="continuation">Continuation</div>
       <div class="filter-pill" data-filter="reversal">Reversal</div>
+      <div class="filter-pill" data-filter="win">Win</div>
+      <div class="filter-pill" data-filter="loss">Loss</div>
+      <div class="filter-pill" data-filter="smt">SMT</div>
+      <div class="filter-pill" data-filter="nosmt">No SMT</div>
     </div>
     <div id="tradesList"></div>
   </section>
@@ -355,6 +424,11 @@ nav.bottom{
       <p class="section-label">Best exit method overall</p>
       <div class="scoreboard" id="scoreboard"></div>
       <div id="overallDetail" style="font-size:12px; color:var(--muted); line-height:1.6;"></div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">SMT impact — trailing R</p>
+      <div class="scoreboard" id="smtBoard" style="grid-template-columns:1fr 1fr;"></div>
     </div>
 
     <div class="filter-row">
@@ -399,9 +473,11 @@ let current = {
   date: new Date().toISOString().slice(0,10),
   direction: 'long',
   pattern: 'continuation',
+  outcome: 'win',
+  smt: 'no',
   instrument: 'NAS',
   tags: [],
-  trail: 0, fixed: 0, target: 0,
+  trail: 0, fixed: 0, target: 0, loss: -1,
   images: []
 };
 let activeFilter = 'all';
@@ -429,6 +505,14 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 /* ---------------- LOG FORM ---------------- */
 document.getElementById('tradeDate').value = current.date;
 document.getElementById('tradeDate').addEventListener('change', e=> current.date = e.target.value);
+function shiftDate(delta){
+  const d = new Date(current.date+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  current.date = d.toISOString().slice(0,10);
+  document.getElementById('tradeDate').value = current.date;
+}
+document.getElementById('dateMinus').addEventListener('click', ()=> shiftDate(-1));
+document.getElementById('datePlus').addEventListener('click', ()=> shiftDate(1));
 
 function wireToggleRow(id, key){
   document.getElementById(id).querySelectorAll('.toggle-btn').forEach(btn=>{
@@ -441,6 +525,20 @@ function wireToggleRow(id, key){
 }
 wireToggleRow('directionRow','direction');
 wireToggleRow('patternRow','pattern');
+wireToggleRow('smtRow','smt');
+
+function setOutcomeUI(val){
+  document.getElementById('exitCard').style.display = val==='win' ? '' : 'none';
+  document.getElementById('lossCard').style.display = val==='loss' ? '' : 'none';
+}
+document.getElementById('outcomeRow').querySelectorAll('.toggle-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.getElementById('outcomeRow').querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    current.outcome = btn.dataset.val;
+    setOutcomeUI(current.outcome);
+  });
+});
 
 document.getElementById('instrumentRow').querySelectorAll('.chip').forEach(chip=>{
   chip.addEventListener('click', ()=>{
@@ -466,7 +564,7 @@ function updateRDisplay(target){
   el.classList.remove('pos','neg','zero');
   el.classList.add(v>0?'pos':v<0?'neg':'zero');
 }
-['trail','fixed','target'].forEach(updateRDisplay);
+['trail','fixed','target','loss'].forEach(updateRDisplay);
 
 document.querySelectorAll('.step-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -567,16 +665,19 @@ document.getElementById('fileInput').addEventListener('change', e=>{
 
 /* ---------------- SAVE TRADE ---------------- */
 document.getElementById('saveTradeBtn').addEventListener('click', ()=>{
+  const isLoss = current.outcome === 'loss';
   const trade = {
     id: Date.now(),
     date: current.date,
     direction: current.direction,
     pattern: current.pattern,
+    outcome: current.outcome,
+    smt: current.smt,
     instrument: current.instrument,
     tags: [...current.tags],
-    r_trail: current.trail,
-    r_fixed: current.fixed,
-    r_target: current.target,
+    r_trail: isLoss ? current.loss : current.trail,
+    r_fixed: isLoss ? current.loss : current.fixed,
+    r_target: isLoss ? current.loss : current.target,
     images: current.images.map(i=>i.src)
   };
   trades.unshift(trade);
@@ -584,12 +685,15 @@ document.getElementById('saveTradeBtn').addEventListener('click', ()=>{
   toast('Trade saved ✓');
 
   // reset form (keep date)
-  current = { date: current.date, direction:'long', pattern:'continuation', instrument:'NAS', tags:[], trail:0, fixed:0, target:0, images:[] };
+  current = { date: current.date, direction:'long', pattern:'continuation', outcome:'win', smt:'no', instrument:'NAS', tags:[], trail:0, fixed:0, target:0, loss:-1, images:[] };
   document.querySelectorAll('#directionRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='long'));
   document.querySelectorAll('#patternRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='continuation'));
+  document.querySelectorAll('#outcomeRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='win'));
+  document.querySelectorAll('#smtRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='no'));
   document.querySelectorAll('#instrumentRow .chip').forEach(c=>c.classList.toggle('on', c.dataset.val==='NAS'));
   document.querySelectorAll('#tagsRow .chip').forEach(c=>c.classList.remove('on'));
-  ['trail','fixed','target'].forEach(updateRDisplay);
+  setOutcomeUI('win');
+  ['trail','fixed','target','loss'].forEach(updateRDisplay);
   renderThumbs();
 });
 
@@ -613,14 +717,21 @@ function renderTrades(){
   const list = document.getElementById('tradesList');
   let filtered = trades;
   if(activeFilter !== 'all'){
-    filtered = trades.filter(t => t.direction===activeFilter || t.pattern===activeFilter);
+    filtered = trades.filter(t =>
+      t.direction===activeFilter ||
+      t.pattern===activeFilter ||
+      t.outcome===activeFilter ||
+      (activeFilter==='smt' && t.smt==='yes') ||
+      (activeFilter==='nosmt' && t.smt==='no')
+    );
   }
   if(filtered.length === 0){
     list.innerHTML = '<div class="empty">No trades logged yet.<br>Head to Log to add your first one.</div>';
     return;
   }
   const maxAbs = Math.max(1, ...filtered.map(t=>Math.max(Math.abs(t.r_trail),Math.abs(t.r_fixed),Math.abs(t.r_target))));
-  list.innerHTML = filtered.map(t=>{
+
+  function tradeCardHtml(t){
     const winner = methodWinner(t);
     const bar = (val, cls)=>{
       const h = Math.max(4, (Math.abs(val)/maxAbs)*22);
@@ -630,8 +741,10 @@ function renderTrades(){
     <div class="trade-item" data-id="${t.id}">
       <div class="trade-top">
         <div class="trade-meta">
+          <span class="badge ${t.outcome||'win'}">${t.outcome||'win'}</span>
           <span class="badge ${t.direction}">${t.direction}</span>
           <span class="badge ${t.pattern==='continuation'?'cont':'rev'}">${t.pattern}</span>
+          ${t.smt==='yes' ? '<span class="badge smt">SMT</span>' : ''}
         </div>
         <span class="trade-date">${t.date} · ${t.instrument}</span>
       </div>
@@ -646,10 +759,64 @@ function renderTrades(){
         <div class="mini-btn danger del-trade">Delete</div>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  // group by month, then week
+  const monthGroups = {};
+  filtered.forEach(t=>{
+    const mKey = monthKey(t.date), wKey = isoWeekKey(t.date);
+    if(!monthGroups[mKey]) monthGroups[mKey] = {};
+    if(!monthGroups[mKey][wKey]) monthGroups[mKey][wKey] = [];
+    monthGroups[mKey][wKey].push(t);
+  });
+  const monthKeysOrdered = Object.keys(monthGroups).sort((a,b)=>{
+    const da = Object.values(monthGroups[a])[0][0].date;
+    const db = Object.values(monthGroups[b])[0][0].date;
+    return new Date(db) - new Date(da);
+  });
+
+  let html = '';
+  monthKeysOrdered.forEach((mKey, mi)=>{
+    const weekGroups = monthGroups[mKey];
+    const weekKeysOrdered = Object.keys(weekGroups).sort((a,b)=>{
+      return new Date(weekGroups[b][0].date) - new Date(weekGroups[a][0].date);
+    });
+    const monthCount = Object.values(weekGroups).reduce((s,arr)=>s+arr.length,0);
+    const mId = `m-${mi}`;
+    html += `<div class="month-group">
+      <div class="group-header month-header" data-target="${mId}">
+        <span class="chevron">▸</span><span class="group-title">${mKey}</span><span class="group-count">${monthCount} trades</span>
+      </div>
+      <div class="group-body" id="${mId}" style="display:none;">`;
+    weekKeysOrdered.forEach((wKey, wi)=>{
+      const weekTrades = weekGroups[wKey].sort((a,b)=> new Date(b.date) - new Date(a.date));
+      const wId = `${mId}-w-${wi}`;
+      html += `<div class="week-group">
+        <div class="group-header week-header" data-target="${wId}">
+          <span class="chevron">▸</span><span class="group-title">${wKey}</span><span class="group-count">${weekTrades.length} trades</span>
+        </div>
+        <div class="group-body" id="${wId}" style="display:none;">
+          ${weekTrades.map(tradeCardHtml).join('')}
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  list.innerHTML = html;
+
+  list.querySelectorAll('.group-header').forEach(h=>{
+    h.addEventListener('click', ()=>{
+      const body = document.getElementById(h.dataset.target);
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : '';
+      h.querySelector('.chevron').textContent = isOpen ? '▸' : '▾';
+      h.classList.toggle('open', !isOpen);
+    });
+  });
 
   list.querySelectorAll('.del-trade').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
       const id = btn.closest('.trade-item').dataset.id;
       trades = trades.filter(t=>t.id != id);
       save(); renderTrades();
@@ -657,7 +824,8 @@ function renderTrades(){
     });
   });
   list.querySelectorAll('.view-imgs').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
       const id = btn.closest('.trade-item').dataset.id;
       const t = trades.find(tr=>tr.id == id);
       document.getElementById('imgModalContent').innerHTML = t.images.map(src=>`<img class="full-img" src="${src}">`).join('');
@@ -707,7 +875,28 @@ function aggregate(list){
   };
 }
 
+function renderSmtBoard(){
+  const board = document.getElementById('smtBoard');
+  const groups = [
+    {key:'yes', label:'With SMT'},
+    {key:'no', label:'No SMT'}
+  ];
+  board.innerHTML = groups.map(g=>{
+    const list = trades.filter(t=>t.smt===g.key);
+    const n = list.length;
+    const wins = list.filter(t=>t.outcome==='win').length;
+    const totalR = list.reduce((s,t)=>s+t.r_trail,0);
+    const wr = n ? (wins/n*100) : 0;
+    return `<div class="score-card">
+      <div class="label">${g.label}</div>
+      <div class="big">${n ? (totalR>0?'+':'')+totalR.toFixed(1)+'R' : '—'}</div>
+      <div class="sub">${n} trades · ${wr.toFixed(0)}% WR</div>
+    </div>`;
+  }).join('');
+}
+
 function renderStats(){
+  renderSmtBoard();
   const scoreboard = document.getElementById('scoreboard');
   const detail = document.getElementById('overallDetail');
   if(trades.length===0){
