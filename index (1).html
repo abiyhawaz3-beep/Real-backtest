@@ -5,22 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>R-Race — Backtest Lab</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0A0E17">
+<meta name="theme-color" content="#1B2032">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0A0E17; --surface:#121826; --surface2:#1B2436; --border:#26314A;
-  --text:#E7ECF6; --muted:#8592AC;
-  --teal:#2DD9C4; --blue:#5B8DEF; --amber:#F5B942;
-  --green:#3ED598; --red:#F2637A;
-  --radius:14px;
+  --bg:#1B2032; --surface:#252C42; --surface2:#2F3752; --border:#3D4666;
+  --text:#EEF0F8; --muted:#9AA3C2;
+  --teal:#4FE0C7; --blue:#7B9EFA; --amber:#F7C767;
+  --green:#54E0A3; --red:#F4879A;
+  --radius:16px;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}
 body{
-  margin:0; background:var(--bg); color:var(--text);
+  margin:0; background:radial-gradient(ellipse at top,#232A42 0%,var(--bg) 55%); color:var(--text);
   font-family:'Inter',system-ui,sans-serif;
   -webkit-user-select:none; user-select:none;
   overscroll-behavior-y:none;
@@ -32,7 +32,7 @@ input,textarea{-webkit-user-select:text; user-select:text;}
 /* HEADER */
 header.top{
   position:sticky; top:0; z-index:20;
-  background:linear-gradient(180deg,#0A0E17 80%,rgba(10,14,23,0));
+  background:linear-gradient(180deg,#1B2032 78%,rgba(27,32,50,0));
   padding:18px 18px 10px;
 }
 .brand{display:flex; align-items:baseline; gap:8px;}
@@ -49,6 +49,7 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 .card{
   background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
   padding:16px; margin-bottom:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
 }
 .section-label{
   font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted);
@@ -123,7 +124,8 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 
 /* TRADES LIST */
 .trade-item{
-  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:13px 14px; margin-bottom:10px;
+  background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:13px 14px; margin-bottom:10px;
+  box-shadow:0 4px 14px rgba(0,0,0,.15);
 }
 .trade-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
 .trade-meta{display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
@@ -146,6 +148,21 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 .mini-btn{flex:1; padding:9px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-size:12px; font-weight:700; text-align:center;}
 .mini-btn.danger{color:var(--red);}
 .empty{text-align:center; color:var(--muted); padding:50px 20px; font-size:14px;}
+
+/* COLLAPSIBLE HISTORY GROUPS */
+.month-group{margin-bottom:12px;}
+.group-header{
+  display:flex; align-items:center; gap:10px; padding:13px 14px;
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; cursor:pointer;
+}
+.group-header.month-header{background:var(--surface2);}
+.group-header.open{border-color:var(--teal);}
+.group-header .chevron{color:var(--teal); font-size:11px; width:10px; transition:transform .15s;}
+.group-header .group-title{flex:1; font-weight:700; font-size:13px;}
+.group-header .group-count{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted);}
+.week-group{margin:8px 0 8px 16px;}
+.group-header.week-header{padding:10px 12px; font-size:12px;}
+.group-body{padding-top:8px;}
 
 /* FILTER PILLS */
 .filter-row{display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px;}
@@ -170,8 +187,9 @@ main{padding:0 16px 24px; max-width:640px; margin:0 auto;}
 /* BOTTOM NAV */
 nav.bottom{
   position:fixed; bottom:0; left:0; right:0; z-index:30;
-  background:rgba(18,24,38,.92); backdrop-filter:blur(10px);
+  background:rgba(37,44,66,.92); backdrop-filter:blur(12px);
   border-top:1px solid var(--border);
+  box-shadow:0 -8px 24px rgba(0,0,0,.25);
   display:flex; padding:8px 10px calc(8px + env(safe-area-inset-bottom));
 }
 .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 0; color:var(--muted); font-size:11px; font-weight:600; border-radius:10px;}
@@ -218,7 +236,11 @@ nav.bottom{
   <section class="screen active" id="screen-log">
     <div class="card">
       <p class="section-label">Date</p>
-      <input type="date" id="tradeDate" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:15px;">
+      <div class="stepper" style="justify-content:space-between;">
+        <div class="step-btn" id="dateMinus">−</div>
+        <input type="date" id="tradeDate" style="flex:1;text-align:center;padding:12px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:15px;">
+        <div class="step-btn" id="datePlus">+</div>
+      </div>
     </div>
 
     <div class="card">
@@ -246,8 +268,16 @@ nav.bottom{
     </div>
 
     <div class="card">
-      <p class="section-label">SMT divergence present?</p>
-      <div class="toggle-row" id="smtRow">
+      <p class="section-label">SMT for bias?</p>
+      <div class="toggle-row" id="smtBiasRow">
+        <div class="toggle-btn yes" data-val="yes">SMT</div>
+        <div class="toggle-btn no on" data-val="no">NO SMT</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">SMT for entry?</p>
+      <div class="toggle-row" id="smtEntryRow">
         <div class="toggle-btn yes" data-val="yes">SMT</div>
         <div class="toggle-btn no on" data-val="no">NO SMT</div>
       </div>
@@ -393,8 +423,10 @@ nav.bottom{
       <div class="filter-pill" data-filter="reversal">Reversal</div>
       <div class="filter-pill" data-filter="win">Win</div>
       <div class="filter-pill" data-filter="loss">Loss</div>
-      <div class="filter-pill" data-filter="smt">SMT</div>
-      <div class="filter-pill" data-filter="nosmt">No SMT</div>
+      <div class="filter-pill" data-filter="smtbias">SMT Bias</div>
+      <div class="filter-pill" data-filter="nosmtbias">No SMT Bias</div>
+      <div class="filter-pill" data-filter="smtentry">SMT Entry</div>
+      <div class="filter-pill" data-filter="nosmtentry">No SMT Entry</div>
     </div>
     <div id="tradesList"></div>
   </section>
@@ -408,8 +440,13 @@ nav.bottom{
     </div>
 
     <div class="card">
-      <p class="section-label">SMT impact — trailing R</p>
-      <div class="scoreboard" id="smtBoard" style="grid-template-columns:1fr 1fr;"></div>
+      <p class="section-label">SMT bias impact — trailing R</p>
+      <div class="scoreboard" id="smtBiasBoard" style="grid-template-columns:1fr 1fr;"></div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">SMT entry impact — trailing R</p>
+      <div class="scoreboard" id="smtEntryBoard" style="grid-template-columns:1fr 1fr;"></div>
     </div>
 
     <div class="filter-row">
@@ -455,7 +492,8 @@ let current = {
   direction: 'long',
   pattern: 'continuation',
   outcome: 'win',
-  smt: 'no',
+  smtBias: 'no',
+  smtEntry: 'no',
   instrument: 'NAS',
   tags: [],
   trail: 0, fixed: 0, target: 0, loss: -1,
@@ -486,6 +524,14 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 /* ---------------- LOG FORM ---------------- */
 document.getElementById('tradeDate').value = current.date;
 document.getElementById('tradeDate').addEventListener('change', e=> current.date = e.target.value);
+function shiftDate(delta){
+  const d = new Date(current.date+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  current.date = d.toISOString().slice(0,10);
+  document.getElementById('tradeDate').value = current.date;
+}
+document.getElementById('dateMinus').addEventListener('click', ()=> shiftDate(-1));
+document.getElementById('datePlus').addEventListener('click', ()=> shiftDate(1));
 
 function wireToggleRow(id, key){
   document.getElementById(id).querySelectorAll('.toggle-btn').forEach(btn=>{
@@ -498,7 +544,8 @@ function wireToggleRow(id, key){
 }
 wireToggleRow('directionRow','direction');
 wireToggleRow('patternRow','pattern');
-wireToggleRow('smtRow','smt');
+wireToggleRow('smtBiasRow','smtBias');
+wireToggleRow('smtEntryRow','smtEntry');
 
 function setOutcomeUI(val){
   document.getElementById('exitCard').style.display = val==='win' ? '' : 'none';
@@ -645,7 +692,8 @@ document.getElementById('saveTradeBtn').addEventListener('click', ()=>{
     direction: current.direction,
     pattern: current.pattern,
     outcome: current.outcome,
-    smt: current.smt,
+    smtBias: current.smtBias,
+    smtEntry: current.smtEntry,
     instrument: current.instrument,
     tags: [...current.tags],
     r_trail: isLoss ? current.loss : current.trail,
@@ -658,11 +706,12 @@ document.getElementById('saveTradeBtn').addEventListener('click', ()=>{
   toast('Trade saved ✓');
 
   // reset form (keep date)
-  current = { date: current.date, direction:'long', pattern:'continuation', outcome:'win', smt:'no', instrument:'NAS', tags:[], trail:0, fixed:0, target:0, loss:-1, images:[] };
+  current = { date: current.date, direction:'long', pattern:'continuation', outcome:'win', smtBias:'no', smtEntry:'no', instrument:'NAS', tags:[], trail:0, fixed:0, target:0, loss:-1, images:[] };
   document.querySelectorAll('#directionRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='long'));
   document.querySelectorAll('#patternRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='continuation'));
   document.querySelectorAll('#outcomeRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='win'));
-  document.querySelectorAll('#smtRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='no'));
+  document.querySelectorAll('#smtBiasRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='no'));
+  document.querySelectorAll('#smtEntryRow .toggle-btn').forEach(b=>b.classList.toggle('on', b.dataset.val==='no'));
   document.querySelectorAll('#instrumentRow .chip').forEach(c=>c.classList.toggle('on', c.dataset.val==='NAS'));
   document.querySelectorAll('#tagsRow .chip').forEach(c=>c.classList.remove('on'));
   setOutcomeUI('win');
@@ -694,8 +743,10 @@ function renderTrades(){
       t.direction===activeFilter ||
       t.pattern===activeFilter ||
       t.outcome===activeFilter ||
-      (activeFilter==='smt' && t.smt==='yes') ||
-      (activeFilter==='nosmt' && t.smt==='no')
+      (activeFilter==='smtbias' && t.smtBias==='yes') ||
+      (activeFilter==='nosmtbias' && t.smtBias==='no') ||
+      (activeFilter==='smtentry' && t.smtEntry==='yes') ||
+      (activeFilter==='nosmtentry' && t.smtEntry==='no')
     );
   }
   if(filtered.length === 0){
@@ -703,7 +754,8 @@ function renderTrades(){
     return;
   }
   const maxAbs = Math.max(1, ...filtered.map(t=>Math.max(Math.abs(t.r_trail),Math.abs(t.r_fixed),Math.abs(t.r_target))));
-  list.innerHTML = filtered.map(t=>{
+
+  function tradeCardHtml(t){
     const winner = methodWinner(t);
     const bar = (val, cls)=>{
       const h = Math.max(4, (Math.abs(val)/maxAbs)*22);
@@ -716,7 +768,8 @@ function renderTrades(){
           <span class="badge ${t.outcome||'win'}">${t.outcome||'win'}</span>
           <span class="badge ${t.direction}">${t.direction}</span>
           <span class="badge ${t.pattern==='continuation'?'cont':'rev'}">${t.pattern}</span>
-          ${t.smt==='yes' ? '<span class="badge smt">SMT</span>' : ''}
+          ${t.smtBias==='yes' ? '<span class="badge smt">SMT Bias</span>' : ''}
+          ${t.smtEntry==='yes' ? '<span class="badge smt">SMT Entry</span>' : ''}
         </div>
         <span class="trade-date">${t.date} · ${t.instrument}</span>
       </div>
@@ -731,10 +784,64 @@ function renderTrades(){
         <div class="mini-btn danger del-trade">Delete</div>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  // group by month, then week
+  const monthGroups = {};
+  filtered.forEach(t=>{
+    const mKey = monthKey(t.date), wKey = isoWeekKey(t.date);
+    if(!monthGroups[mKey]) monthGroups[mKey] = {};
+    if(!monthGroups[mKey][wKey]) monthGroups[mKey][wKey] = [];
+    monthGroups[mKey][wKey].push(t);
+  });
+  const monthKeysOrdered = Object.keys(monthGroups).sort((a,b)=>{
+    const da = Object.values(monthGroups[a])[0][0].date;
+    const db = Object.values(monthGroups[b])[0][0].date;
+    return new Date(db) - new Date(da);
+  });
+
+  let html = '';
+  monthKeysOrdered.forEach((mKey, mi)=>{
+    const weekGroups = monthGroups[mKey];
+    const weekKeysOrdered = Object.keys(weekGroups).sort((a,b)=>{
+      return new Date(weekGroups[b][0].date) - new Date(weekGroups[a][0].date);
+    });
+    const monthCount = Object.values(weekGroups).reduce((s,arr)=>s+arr.length,0);
+    const mId = `m-${mi}`;
+    html += `<div class="month-group">
+      <div class="group-header month-header" data-target="${mId}">
+        <span class="chevron">▸</span><span class="group-title">${mKey}</span><span class="group-count">${monthCount} trades</span>
+      </div>
+      <div class="group-body" id="${mId}" style="display:none;">`;
+    weekKeysOrdered.forEach((wKey, wi)=>{
+      const weekTrades = weekGroups[wKey].sort((a,b)=> new Date(b.date) - new Date(a.date));
+      const wId = `${mId}-w-${wi}`;
+      html += `<div class="week-group">
+        <div class="group-header week-header" data-target="${wId}">
+          <span class="chevron">▸</span><span class="group-title">${wKey}</span><span class="group-count">${weekTrades.length} trades</span>
+        </div>
+        <div class="group-body" id="${wId}" style="display:none;">
+          ${weekTrades.map(tradeCardHtml).join('')}
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  list.innerHTML = html;
+
+  list.querySelectorAll('.group-header').forEach(h=>{
+    h.addEventListener('click', ()=>{
+      const body = document.getElementById(h.dataset.target);
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : '';
+      h.querySelector('.chevron').textContent = isOpen ? '▸' : '▾';
+      h.classList.toggle('open', !isOpen);
+    });
+  });
 
   list.querySelectorAll('.del-trade').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
       const id = btn.closest('.trade-item').dataset.id;
       trades = trades.filter(t=>t.id != id);
       save(); renderTrades();
@@ -742,7 +849,8 @@ function renderTrades(){
     });
   });
   list.querySelectorAll('.view-imgs').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
       const id = btn.closest('.trade-item').dataset.id;
       const t = trades.find(tr=>tr.id == id);
       document.getElementById('imgModalContent').innerHTML = t.images.map(src=>`<img class="full-img" src="${src}">`).join('');
@@ -792,14 +900,14 @@ function aggregate(list){
   };
 }
 
-function renderSmtBoard(){
-  const board = document.getElementById('smtBoard');
+function renderSmtBoardFor(field, elId){
+  const board = document.getElementById(elId);
   const groups = [
     {key:'yes', label:'With SMT'},
     {key:'no', label:'No SMT'}
   ];
   board.innerHTML = groups.map(g=>{
-    const list = trades.filter(t=>t.smt===g.key);
+    const list = trades.filter(t=>t[field]===g.key);
     const n = list.length;
     const wins = list.filter(t=>t.outcome==='win').length;
     const totalR = list.reduce((s,t)=>s+t.r_trail,0);
@@ -813,7 +921,8 @@ function renderSmtBoard(){
 }
 
 function renderStats(){
-  renderSmtBoard();
+  renderSmtBoardFor('smtBias', 'smtBiasBoard');
+  renderSmtBoardFor('smtEntry', 'smtEntryBoard');
   const scoreboard = document.getElementById('scoreboard');
   const detail = document.getElementById('overallDetail');
   if(trades.length===0){
